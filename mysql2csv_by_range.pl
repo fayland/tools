@@ -35,6 +35,8 @@ $dsn .= ";=port=$port" if $port;
 
 my $dbh = DBI->connect( $dsn, $user, $pw, { AutoCommit => 0, RaiseError => 1 } )
   or die "Unable to connect to mysql DB_NAME on host $host: $DBI::errstr\n";
+$dbh->{mysql_enable_utf8} = 1;
+$dbh->do("SET names utf8");
 
 my ($min_id) = $dbh->selectrow_array("SELECT MIN($id_col) FROM $table");
 my ($max_id) = $dbh->selectrow_array("SELECT MAX($id_col) FROM $table");
@@ -48,7 +50,7 @@ while (my $r = $col_sth->fetchrow_hashref) {
 
 my $csv = Text::CSV_XS->new({ binary => 1 }) or
     die "Cannot use CSV: " . Text::CSV_XS->error_diag();
-open(my $fh, '>', $outname) or die "Can't write $outname: $!\n";
+open(my $fh, '>:utf8', $outname) or die "Can't write $outname: $!\n";
 
 $csv->print($fh, \@cols); print $fh "\n";
 
